@@ -22,45 +22,16 @@ public class Main {
                 "4 - FileOutputStream\n" +
                 "5 - Files");
         Scanner scanner = new Scanner(System.in);
-        CreateFile algorithm;
         String content;
-        String extension = null;
-        switch (scanner.nextLine()) {
-            case "1":
-                algorithm = new FilePrintWriter();
-                break;
-            case "2":
-                algorithm = new FileBufferedWriter();
-                break;
-            case "3":
-                algorithm = new FileDataOutputStream();
-                break;
-            case "4":
-                algorithm = new FileFileOutputStream();
-                break;
-            case "5":
-                algorithm = new FileFiles();
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + scanner.nextLine());
-        }
-        controller.setAlgorithm(algorithm);
+        String extension;
 
-        System.out.println("Creating empty ./FILES folder");
+        chooseAlgorithmForFileDuplication(controller, scanner);
+        prepareFolderForFiles();
 
-        try {
-            Path filesFolder = Paths.get("./FILES/");
-            if (Files.isDirectory(filesFolder)) {
-                System.out.println("Folder exists. Emptying it.");
-                deleteDirectoryRecursion(filesFolder);
-            }
-        } catch (Exception ignore) {
-            //noop
-        }
-        Files.createDirectory(Paths.get("./FILES/"));
         System.out.println("Choose operation: \n" +
                 "1 - create new generic file\n" +
                 "2 - copy existing file");
+
         switch (scanner.nextLine()) {
             case "1":
                 content = ("Some given content" + System.lineSeparator()).repeat(20);
@@ -68,12 +39,13 @@ public class Main {
                 break;
             case "2":
                 System.out.println("Enter path to the file (c:\\some\\folder\\esample.file):");
-                Path file = Paths.get(scanner.nextLine());
+                String pathToFile = scanner.nextLine();
+                Path file = Paths.get(pathToFile);
                 if (Files.isRegularFile(file)) {
                     content = new String(Files.readAllBytes(file));
                     extension = file.toString().substring(file.toString().lastIndexOf(".") + 1);
                 } else {
-                    System.out.println("Error. Not a correct file.");
+                    System.out.println("Error. Not a correct file. Exiting.");
                     return;
                 }
                 break;
@@ -94,6 +66,53 @@ public class Main {
 
         System.out.println("Done. Time elapsed: " + timeElapsed/1000);
 
+    }
+
+    private static void chooseAlgorithmForFileDuplication(FilesCreatorController controller, Scanner scanner) {
+        CreateFile algorithm;
+        switch (scanner.nextLine()) {
+            case "1":
+                algorithm = new FilePrintWriter();
+                break;
+            case "2":
+                algorithm = new FileBufferedWriter();
+                break;
+            case "3":
+                algorithm = new FileDataOutputStream();
+                break;
+            case "4":
+                algorithm = new FileFileOutputStream();
+                break;
+            case "5":
+                algorithm = new FileFiles();
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + scanner.nextLine());
+        }
+        controller.setAlgorithm(algorithm);
+    }
+
+    private static void prepareFolderForFiles() {
+        System.out.println("Creating empty ./FILES folder");
+
+        try {
+            Path filesFolder = Paths.get("./FILES/");
+            if (Files.isDirectory(filesFolder)) {
+                System.out.println("Folder exists. Emptying it.");
+                deleteDirectoryRecursion(filesFolder);
+            }
+        } catch (Exception ignore) {
+            //noop
+        }
+        createFolder();
+    }
+
+    private static void createFolder() {
+        try {
+            Files.createDirectory(Paths.get("./FILES/"));
+        } catch (IOException ignore) {
+            //noop
+        }
     }
 
     static void deleteDirectoryRecursion(Path path) throws IOException {
